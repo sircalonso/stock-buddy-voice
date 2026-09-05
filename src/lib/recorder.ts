@@ -20,7 +20,7 @@ function downsample(buffers: Float32Array[], from: number, to: number): Float32A
     const start = Math.floor(i * ratio);
     const end = Math.min(Math.floor((i + 1) * ratio), merged.length);
     let sum = 0;
-    for (let j = start; j < end; j++) sum += merged[j];
+    for (let j = start; j < end; j++) sum += merged[j] ?? 0;
     out[i] = sum / Math.max(1, end - start);
   }
   return out;
@@ -47,7 +47,7 @@ function encodeWav(samples: Float32Array, sampleRate: number): Uint8Array {
   view.setUint32(40, samples.length * 2, true);
   let offset = 44;
   for (let i = 0; i < samples.length; i++) {
-    const s = Math.max(-1, Math.min(1, samples[i]));
+    const s = Math.max(-1, Math.min(1, samples[i] ?? 0));
     view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true);
     offset += 2;
   }
