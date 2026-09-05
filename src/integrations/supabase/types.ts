@@ -14,7 +14,109 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      alerts: {
+        Row: {
+          created_at: string
+          done: boolean
+          due_at: string
+          id: string
+          kind: string
+          message: string
+          notified_at: string | null
+          product_id: string | null
+          product_name: string
+        }
+        Insert: {
+          created_at?: string
+          done?: boolean
+          due_at?: string
+          id?: string
+          kind: string
+          message: string
+          notified_at?: string | null
+          product_id?: string | null
+          product_name: string
+        }
+        Update: {
+          created_at?: string
+          done?: boolean
+          due_at?: string
+          id?: string
+          kind?: string
+          message?: string
+          notified_at?: string | null
+          product_id?: string | null
+          product_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alerts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          price: number | null
+          quantity: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          price?: number | null
+          quantity?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          price?: number | null
+          quantity?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sales: {
+        Row: {
+          id: string
+          platform: string
+          product_id: string
+          quantity: number
+          sold_at: string
+        }
+        Insert: {
+          id?: string
+          platform: string
+          product_id: string
+          quantity?: number
+          sold_at?: string
+        }
+        Update: {
+          id?: string
+          platform?: string
+          product_id?: string
+          quantity?: number
+          sold_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
