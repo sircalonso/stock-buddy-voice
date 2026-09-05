@@ -1,14 +1,14 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bell, BellRing, Check, Loader2, Mic, Package, Plus, Square, Trash2 } from "lucide-react";
+import { Bell, BellRing, Check, Loader2, LogOut, Mic, Package, Plus, Square, Trash2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { startRecording } from "@/lib/recorder";
 import { askNotificationPermission, initNotifications, pushNotification } from "@/lib/notify";
 import { interpretVoice, type VoiceAction } from "@/lib/voice.functions";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/inventario")({
   head: () => ({
     meta: [
       { title: "Mi Stock por Voz | Wallapop y Vinted" },
@@ -29,6 +29,7 @@ export const Route = createFileRoute("/")({
   }),
   component: Index,
 });
+
 
 type Product = {
   id: string;
