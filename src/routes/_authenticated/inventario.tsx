@@ -71,6 +71,10 @@ function formatDate(value: string) {
 
 function Index() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const { user } = Route.useRouteContext();
+  const userId = user.id;
+
   const [recording, setRecording] = useState(false);
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState<{ heard: string; reply: string } | null>(null);
