@@ -144,6 +144,7 @@ function Index() {
   const createAlert = useCallback(
     async (product: { id: string; name: string }, kind: Alert["kind"], dueAt: Date) => {
       await supabase.from("alerts").insert({
+        user_id: userId,
         product_id: product.id,
         product_name: product.name,
         kind,
@@ -154,7 +155,7 @@ function Index() {
             : `Ha pasado una semana desde que vendiste "${product.name}". Vuelve a publicarlo.`,
       });
     },
-    [],
+    [userId],
   );
 
   const applyActions = useCallback(
@@ -183,6 +184,7 @@ function Index() {
             const { data } = await supabase
               .from("products")
               .insert({
+                user_id: userId,
                 name: action.name,
                 quantity: action.quantity || 1,
                 price: action.price ?? null,
@@ -200,6 +202,7 @@ function Index() {
           const quantity = Math.max(0, existing.quantity - sold);
           await supabase.from("products").update({ quantity }).eq("id", existing.id);
           await supabase.from("sales").insert({
+            user_id: userId,
             product_id: existing.id,
             platform: action.platform,
             quantity: sold || 1,
@@ -229,7 +232,7 @@ function Index() {
       await queryClient.invalidateQueries({ queryKey: ["products"] });
       await queryClient.invalidateQueries({ queryKey: ["alerts"] });
     },
-    [products, createAlert, queryClient],
+    [products, createAlert, queryClient, userId],
   );
 
   const voiceMutation = useMutation({
