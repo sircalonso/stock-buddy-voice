@@ -300,6 +300,19 @@ function Index() {
           </p>
           <h1 className="mt-1 text-3xl font-extrabold leading-tight">Mi stock por voz</h1>
         </div>
+        <div className="flex items-center gap-2">
+        <button
+          onClick={async () => {
+            await queryClient.cancelQueries();
+            queryClient.clear();
+            await supabase.auth.signOut();
+            navigate({ to: "/auth", replace: true });
+          }}
+          aria-label="Cerrar sesión"
+          className="rounded-2xl border border-border bg-card p-3 text-muted-foreground shadow-[var(--shadow-card)]"
+        >
+          <LogOut className="size-5" />
+        </button>
         <div className="relative rounded-2xl border border-border bg-card p-3 shadow-[var(--shadow-card)]">
           {dueAlerts.length > 0 ? (
             <BellRing className="size-5 text-accent" />
@@ -311,6 +324,7 @@ function Index() {
               {dueAlerts.length}
             </span>
           )}
+        </div>
         </div>
       </header>
 
