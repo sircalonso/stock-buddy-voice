@@ -8,7 +8,7 @@ const Input = z.object({
 
 export type VoiceAction =
   | { type: "add"; name: string; quantity: number; price?: number | null }
-  | { type: "sell"; name: string; platform: "wallapop" | "vinted"; quantity: number }
+  | { type: "sell"; name: string; platform: "wallapop" | "vinted" | "almacen"; quantity: number }
   | { type: "set"; name: string; quantity: number }
   | { type: "remove"; name: string };
 
@@ -57,7 +57,7 @@ export const interpretVoice = createServerFn({ method: "POST" })
       return { transcript: "", actions: [], reply: "No he oído nada, prueba otra vez." };
     }
 
-    const system = `Eres el asistente de un inventario de segunda mano que se vende en Wallapop y Vinted.
+    const system = `Eres el asistente de un inventario de segunda mano que se vende en Wallapop y Vinted, y que tambien se envia a almacenes.
 Conviertes una frase dicha en voz alta en acciones sobre el stock.
 Productos actuales (nombre: cantidad): ${
       data.products.length
@@ -68,11 +68,11 @@ Devuelve SOLO JSON con esta forma:
 {"actions":[...],"reply":"frase corta en español"}
 Acciones posibles:
 {"type":"add","name":"...","quantity":n,"price":n|null}  -> han llegado productos nuevos o se repone stock
-{"type":"sell","name":"...","platform":"wallapop"|"vinted","quantity":n} -> se ha vendido
+{"type":"sell","name":"...","platform":"wallapop"|"vinted"|"almacen","quantity":n} -> se ha vendido, o se ha enviado a almacenes (platform "almacen")
 {"type":"set","name":"...","quantity":n} -> corregir la cantidad exacta
 {"type":"remove","name":"..."} -> borrar el producto de la lista
 Reglas: si el nombre se parece a uno existente, usa EXACTAMENTE el nombre existente.
-Si no se indica cantidad, usa 1. Si no se indica plataforma en una venta, no inventes: usa "sell" solo si se menciona Wallapop o Vinted; si no, devuelve actions vacío y pide en "reply" que diga la aplicación.`;
+Si no se indica cantidad, usa 1. Si no se indica plataforma en una venta, no inventes: usa "sell" solo si se menciona Wallapop, Vinted o el almacén; si no, devuelve actions vacío y pide en "reply" que diga el destino.`;
 
     const chatRes = await fetch(`${GATEWAY}/chat/completions`, {
       method: "POST",
