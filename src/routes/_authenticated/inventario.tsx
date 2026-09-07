@@ -1,10 +1,11 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Bell,
   BellRing,
   Check,
+  History,
   ListPlus,
   Loader2,
   LogOut,
@@ -301,6 +302,7 @@ function Index() {
 
       await queryClient.invalidateQueries({ queryKey: ["products"] });
       await queryClient.invalidateQueries({ queryKey: ["alerts"] });
+      await queryClient.invalidateQueries({ queryKey: ["sales"] });
     },
     [products, createAlert, queryClient, userId],
   );
@@ -423,6 +425,13 @@ function Index() {
           <h1 className="mt-1 text-3xl font-extrabold leading-tight">Mi stock por voz</h1>
         </div>
         <div className="flex items-center gap-2">
+          <Link
+            to="/historial"
+            aria-label="Ver historial de ventas y envíos"
+            className="rounded-2xl border border-border bg-card p-3 text-muted-foreground shadow-[var(--shadow-card)]"
+          >
+            <History className="size-5" />
+          </Link>
           <button
             onClick={async () => {
               await queryClient.cancelQueries();
