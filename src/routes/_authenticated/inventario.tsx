@@ -372,6 +372,7 @@ function Index() {
     if (value === 0 && product.quantity > 0) await createAlert(product, "delete", new Date());
     void queryClient.invalidateQueries({ queryKey: ["products"] });
     void queryClient.invalidateQueries({ queryKey: ["alerts"] });
+    void pushToSheet();
   };
 
   const adjust = (product: Product, delta: number) => setQuantity(product, product.quantity + delta);
