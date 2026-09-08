@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { startRecording } from "@/lib/recorder";
 import { askNotificationPermission, initNotifications, pushNotification } from "@/lib/notify";
 import { interpretVoice, type VoiceAction } from "@/lib/voice.functions";
+import { syncSheet } from "@/lib/sheets.functions";
 
 export const Route = createFileRoute("/_authenticated/inventario")({
   head: () => ({
