@@ -477,6 +477,19 @@ function Index() {
         </div>
       </header>
 
+      {sheetState !== "idle" && (
+        <p className="-mt-3 text-xs text-muted-foreground">
+          {sheetState === "saving" && "Guardando también en tu hoja de Google…"}
+          {sheetState === "ok" && "Guardado también en tu hoja de Google."}
+          {sheetState === "error" && (
+            <span className="text-destructive">
+              No he podido escribir en tu hoja de Google. Revisa que la cuenta conectada tenga
+              permiso de edición.
+            </span>
+          )}
+        </p>
+      )}
+
       {permission !== "granted" && (
         <button
           onClick={async () => setPermission(await askNotificationPermission())}
