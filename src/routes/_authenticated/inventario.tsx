@@ -398,6 +398,7 @@ function Index() {
     setNewPrice("");
     setShowAdd(false);
     void queryClient.invalidateQueries({ queryKey: ["products"] });
+    void pushToSheet();
   };
 
   const importList = async () => {
