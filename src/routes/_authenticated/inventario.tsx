@@ -144,6 +144,7 @@ function Index() {
   const [importing, setImporting] = useState(false);
   const [importDone, setImportDone] = useState<string | null>(null);
   const [editing, setEditing] = useState<{ id: string; value: string } | null>(null);
+  const [sheetState, setSheetState] = useState<"idle" | "saving" | "ok" | "error">("idle");
 
   const productsQuery = useQuery({
     queryKey: ["products"],
