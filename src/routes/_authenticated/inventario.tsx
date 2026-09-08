@@ -210,6 +210,18 @@ function Index() {
     })();
   }, [alerts, queryClient]);
 
+  // Copia el stock y los movimientos a la hoja de Google después de cada cambio.
+  const pushToSheet = useCallback(async () => {
+    setSheetState("saving");
+    try {
+      await syncSheet();
+      setSheetState("ok");
+    } catch (err) {
+      console.error(err);
+      setSheetState("error");
+    }
+  }, []);
+
   const createAlert = useCallback(
     async (product: { id: string; name: string }, kind: Alert["kind"], dueAt: Date) => {
       await supabase.from("alerts").insert({
