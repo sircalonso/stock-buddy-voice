@@ -424,6 +424,7 @@ function Index() {
       setImportDone(`Añadidos ${rows.length} productos de tu lista.`);
       setShowImport(false);
       void queryClient.invalidateQueries({ queryKey: ["products"] });
+      void pushToSheet();
     } finally {
       setImporting(false);
     }
