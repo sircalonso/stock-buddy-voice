@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { startRecording } from "@/lib/recorder";
 import { askNotificationPermission, initNotifications, pushNotification } from "@/lib/notify";
 import { interpretVoice, type VoiceAction } from "@/lib/voice.functions";
+import { syncSheet } from "@/lib/sheets.functions";
 
 export const Route = createFileRoute("/_authenticated/inventario")({
   head: () => ({
@@ -143,6 +144,7 @@ function Index() {
   const [importing, setImporting] = useState(false);
   const [importDone, setImportDone] = useState<string | null>(null);
   const [editing, setEditing] = useState<{ id: string; value: string } | null>(null);
+  const [sheetState, setSheetState] = useState<"idle" | "saving" | "ok" | "error">("idle");
 
   const productsQuery = useQuery({
     queryKey: ["products"],
@@ -208,6 +210,18 @@ function Index() {
       void queryClient.invalidateQueries({ queryKey: ["alerts"] });
     })();
   }, [alerts, queryClient]);
+
+  // Copia el stock y los movimientos a la hoja de Google después de cada cambio.
+  const pushToSheet = useCallback(async () => {
+    setSheetState("saving");
+    try {
+      await syncSheet();
+      setSheetState("ok");
+    } catch (err) {
+      console.error(err);
+      setSheetState("error");
+    }
+  }, []);
 
   const createAlert = useCallback(
     async (product: { id: string; name: string }, kind: Alert["kind"], dueAt: Date) => {
@@ -303,8 +317,9 @@ function Index() {
       await queryClient.invalidateQueries({ queryKey: ["products"] });
       await queryClient.invalidateQueries({ queryKey: ["alerts"] });
       await queryClient.invalidateQueries({ queryKey: ["sales"] });
+      void pushToSheet();
     },
-    [products, createAlert, queryClient, userId],
+    [products, createAlert, queryClient, userId, pushToSheet],
   );
 
   const voiceMutation = useMutation({
@@ -357,6 +372,7 @@ function Index() {
     if (value === 0 && product.quantity > 0) await createAlert(product, "delete", new Date());
     void queryClient.invalidateQueries({ queryKey: ["products"] });
     void queryClient.invalidateQueries({ queryKey: ["alerts"] });
+    void pushToSheet();
   };
 
   const adjust = (product: Product, delta: number) => setQuantity(product, product.quantity + delta);
@@ -382,6 +398,7 @@ function Index() {
     setNewPrice("");
     setShowAdd(false);
     void queryClient.invalidateQueries({ queryKey: ["products"] });
+    void pushToSheet();
   };
 
   const importList = async () => {
@@ -407,6 +424,7 @@ function Index() {
       setImportDone(`Añadidos ${rows.length} productos de tu lista.`);
       setShowImport(false);
       void queryClient.invalidateQueries({ queryKey: ["products"] });
+      void pushToSheet();
     } finally {
       setImporting(false);
     }
@@ -458,6 +476,19 @@ function Index() {
           </div>
         </div>
       </header>
+
+      {sheetState !== "idle" && (
+        <p className="-mt-3 text-xs text-muted-foreground">
+          {sheetState === "saving" && "Guardando también en tu hoja de Google…"}
+          {sheetState === "ok" && "Guardado también en tu hoja de Google."}
+          {sheetState === "error" && (
+            <span className="text-destructive">
+              No he podido escribir en tu hoja de Google. Revisa que la cuenta conectada tenga
+              permiso de edición.
+            </span>
+          )}
+        </p>
+      )}
 
       {permission !== "granted" && (
         <button
