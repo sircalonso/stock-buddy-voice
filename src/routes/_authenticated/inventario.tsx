@@ -317,8 +317,9 @@ function Index() {
       await queryClient.invalidateQueries({ queryKey: ["products"] });
       await queryClient.invalidateQueries({ queryKey: ["alerts"] });
       await queryClient.invalidateQueries({ queryKey: ["sales"] });
+      void pushToSheet();
     },
-    [products, createAlert, queryClient, userId],
+    [products, createAlert, queryClient, userId, pushToSheet],
   );
 
   const voiceMutation = useMutation({
