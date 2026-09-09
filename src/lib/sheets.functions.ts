@@ -118,8 +118,19 @@ export const syncSheet = createServerFn({ method: "POST" })
       }),
     ];
 
+    const reservedRows: (string | number)[][] = [
+      ["Producto", "Unidades reservadas", "Añadido"],
+      ...(reserved ?? []).map((r) => [r.product_name, r.quantity, fmt(r.created_at)]),
+    ];
+
     await writeTab(STOCK_TAB, stockRows);
     await writeTab(MOVES_TAB, moveRows);
+    await writeTab(FBA_TAB, reservedRows);
 
-    return { products: (products ?? []).length, moves: (sales ?? []).length };
+    return {
+      products: (products ?? []).length,
+      moves: (sales ?? []).length,
+      reserved: (reserved ?? []).length,
+    };
   });
+
