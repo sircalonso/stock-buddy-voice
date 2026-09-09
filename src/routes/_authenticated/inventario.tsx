@@ -176,6 +176,24 @@ function Index() {
     refetchInterval: 30000,
   });
 
+  // Reservas del próximo envío FBA: se guardan también en el móvil para verlas sin conexión.
+  const reservationsQuery = useQuery({
+    queryKey: ["fba-reservations"],
+    queryFn: async (): Promise<Reservation[]> => {
+      const { data, error: err } = await supabase
+        .from("fba_reservations")
+        .select("id,product_id,product_name,quantity,created_at")
+        .order("product_name");
+      if (err) throw err;
+      const rows = (data ?? []) as Reservation[];
+      writeFbaCache(rows);
+      return rows;
+    },
+  });
+  const reservedCount = reservationsQuery.data?.length ?? 0;
+
+
+
   const products = useMemo(() => productsQuery.data ?? [], [productsQuery.data]);
   const alerts = useMemo(() => alertsQuery.data ?? [], [alertsQuery.data]);
   const dueAlerts = alerts.filter((a) => new Date(a.due_at).getTime() <= Date.now());
