@@ -5,6 +5,8 @@ const GATEWAY = "https://connector-gateway.lovable.dev/google_sheets/v4";
 const SPREADSHEET_ID = "1odIesSnlh16zP035ddzpdn8xAoONderyAcwQlQtAziI";
 const STOCK_TAB = "App Stock";
 const MOVES_TAB = "App Movimientos";
+const FBA_TAB = "App Reservado FBA";
+
 
 function headers() {
   const lovableKey = process.env["LOVABLE_API_KEY"];
@@ -32,7 +34,8 @@ async function ensureTabs() {
     `/spreadsheets/${SPREADSHEET_ID}?fields=sheets.properties.title`,
   )) as { sheets?: Array<{ properties?: { title?: string } }> };
   const titles = new Set((meta.sheets ?? []).map((s) => s.properties?.title));
-  const missing = [STOCK_TAB, MOVES_TAB].filter((t) => !titles.has(t));
+  const missing = [STOCK_TAB, MOVES_TAB, FBA_TAB].filter((t) => !titles.has(t));
+
   if (missing.length === 0) return;
   await sheetsFetch(`/spreadsheets/${SPREADSHEET_ID}:batchUpdate`, {
     method: "POST",
