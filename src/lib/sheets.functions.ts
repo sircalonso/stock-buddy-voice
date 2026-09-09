@@ -60,7 +60,9 @@ const PLATFORM_LABEL: Record<string, string> = {
   wallapop: "Wallapop",
   vinted: "Vinted",
   almacen: "Almacén",
+  fba: "Enviado a FBA",
 };
+
 
 function fmt(iso: string) {
   const d = new Date(iso);
