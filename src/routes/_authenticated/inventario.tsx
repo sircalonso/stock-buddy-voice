@@ -404,6 +404,28 @@ function Index() {
     await applyActions([{ type: "sell", name: product.name, platform, quantity: 1 }]);
   };
 
+  // Añade el producto a la lista provisional del próximo envío FBA (todavía no descuenta stock).
+  const reserveForFba = async (product: Product) => {
+    const existing = (reservationsQuery.data ?? []).find((r) => r.product_id === product.id);
+    if (existing) {
+      await supabase
+        .from("fba_reservations")
+        .update({ quantity: Math.min(existing.quantity + 1, product.quantity) })
+        .eq("id", existing.id);
+    } else {
+      await supabase.from("fba_reservations").insert({
+        user_id: userId,
+        product_id: product.id,
+        product_name: product.name,
+        quantity: 1,
+      });
+    }
+    await queryClient.invalidateQueries({ queryKey: ["fba-reservations"] });
+    void pushToSheet();
+  };
+
+
+
   const addProduct = async () => {
     const name = newName.trim();
     if (!name) return;
@@ -466,12 +488,25 @@ function Index() {
         </div>
         <div className="flex items-center gap-2">
           <Link
+            to="/envio-fba"
+            aria-label="Ver productos reservados para el próximo envío FBA"
+            className="relative rounded-2xl border border-border bg-card p-3 text-muted-foreground shadow-[var(--shadow-card)]"
+          >
+            <Truck className="size-5" />
+            {reservedCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground">
+                {reservedCount}
+              </span>
+            )}
+          </Link>
+          <Link
             to="/historial"
             aria-label="Ver historial de ventas y envíos"
             className="rounded-2xl border border-border bg-card p-3 text-muted-foreground shadow-[var(--shadow-card)]"
           >
             <History className="size-5" />
           </Link>
+
           <button
             onClick={async () => {
               await queryClient.cancelQueries();
@@ -756,6 +791,15 @@ function Index() {
                 A almacén
               </button>
             </div>
+
+            <button
+              disabled={product.quantity === 0}
+              onClick={() => reserveForFba(product)}
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-primary/40 bg-primary/10 py-2 text-[11px] font-bold text-primary disabled:opacity-40"
+            >
+              <Truck className="size-4" /> Para próximo envío
+            </button>
+
 
             <div className="mt-2 flex items-center justify-between">
               <span className="text-[11px] text-muted-foreground">Vendido o enviado</span>
