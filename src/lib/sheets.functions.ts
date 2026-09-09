@@ -5,6 +5,8 @@ const GATEWAY = "https://connector-gateway.lovable.dev/google_sheets/v4";
 const SPREADSHEET_ID = "1odIesSnlh16zP035ddzpdn8xAoONderyAcwQlQtAziI";
 const STOCK_TAB = "App Stock";
 const MOVES_TAB = "App Movimientos";
+const FBA_TAB = "App Reservado FBA";
+
 
 function headers() {
   const lovableKey = process.env["LOVABLE_API_KEY"];
@@ -32,7 +34,8 @@ async function ensureTabs() {
     `/spreadsheets/${SPREADSHEET_ID}?fields=sheets.properties.title`,
   )) as { sheets?: Array<{ properties?: { title?: string } }> };
   const titles = new Set((meta.sheets ?? []).map((s) => s.properties?.title));
-  const missing = [STOCK_TAB, MOVES_TAB].filter((t) => !titles.has(t));
+  const missing = [STOCK_TAB, MOVES_TAB, FBA_TAB].filter((t) => !titles.has(t));
+
   if (missing.length === 0) return;
   await sheetsFetch(`/spreadsheets/${SPREADSHEET_ID}:batchUpdate`, {
     method: "POST",
@@ -57,7 +60,9 @@ const PLATFORM_LABEL: Record<string, string> = {
   wallapop: "Wallapop",
   vinted: "Vinted",
   almacen: "Almacén",
+  fba: "Enviado a FBA",
 };
+
 
 function fmt(iso: string) {
   const d = new Date(iso);
@@ -70,16 +75,27 @@ export const syncSheet = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const { supabase } = context;
 
-    const [{ data: products, error: pErr }, { data: sales, error: sErr }] = await Promise.all([
+    const [
+
+      { data: products, error: pErr },
+      { data: sales, error: sErr },
+      { data: reserved, error: rErr },
+    ] = await Promise.all([
       supabase.from("products").select("name,quantity,price,updated_at").order("name"),
       supabase
         .from("sales")
         .select("platform,quantity,sold_at,products(name)")
         .order("sold_at", { ascending: false })
         .limit(2000),
+      supabase
+        .from("fba_reservations")
+        .select("product_name,quantity,created_at")
+        .order("product_name"),
     ]);
     if (pErr) throw pErr;
     if (sErr) throw sErr;
+    if (rErr) throw rErr;
+
 
     await ensureTabs();
 
@@ -102,8 +118,19 @@ export const syncSheet = createServerFn({ method: "POST" })
       }),
     ];
 
+    const reservedRows: (string | number)[][] = [
+      ["Producto", "Unidades reservadas", "Añadido"],
+      ...(reserved ?? []).map((r) => [r.product_name, r.quantity, fmt(r.created_at)]),
+    ];
+
     await writeTab(STOCK_TAB, stockRows);
     await writeTab(MOVES_TAB, moveRows);
+    await writeTab(FBA_TAB, reservedRows);
 
-    return { products: (products ?? []).length, moves: (sales ?? []).length };
+    return {
+      products: (products ?? []).length,
+      moves: (sales ?? []).length,
+      reserved: (reserved ?? []).length,
+    };
   });
+
