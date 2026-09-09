@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/historial")({
   component: Historial,
 });
 
-type Platform = "wallapop" | "vinted" | "almacen";
+type Platform = "wallapop" | "vinted" | "almacen" | "fba";
 
 type SaleRow = {
   id: string;
@@ -42,12 +42,14 @@ const LABEL: Record<Platform, string> = {
   wallapop: "Wallapop",
   vinted: "Vinted",
   almacen: "Almacén",
+  fba: "Enviado a FBA",
 };
 
 const STYLE: Record<Platform, string> = {
   wallapop: "border-wallapop/40 bg-wallapop/10 text-wallapop",
   vinted: "border-vinted/40 bg-vinted/10 text-vinted",
   almacen: "border-warning/40 bg-warning/10 text-warning",
+  fba: "border-primary/40 bg-primary/10 text-primary",
 };
 
 function normalize(value: string) {
@@ -87,7 +89,7 @@ function Historial() {
   const sales = useMemo(() => salesQuery.data ?? [], [salesQuery.data]);
 
   const totals = useMemo(() => {
-    const base: Record<Platform, number> = { wallapop: 0, vinted: 0, almacen: 0 };
+    const base: Record<Platform, number> = { wallapop: 0, vinted: 0, almacen: 0, fba: 0 };
     for (const sale of sales) base[sale.platform] = (base[sale.platform] ?? 0) + sale.quantity;
     return base;
   }, [sales]);
@@ -153,7 +155,7 @@ function Historial() {
         </div>
 
         <div className="flex gap-2">
-          {(["todo", "wallapop", "vinted", "almacen"] as const).map((key) => (
+          {(["todo", "wallapop", "vinted", "almacen", "fba"] as const).map((key) => (
             <button
               key={key}
               onClick={() => setFilter(key)}
