@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedEnvioFbaRouteImport } from './routes/_authenticated/envio-fba'
 import { Route as AuthenticatedHistorialRouteImport } from './routes/_authenticated/historial'
 import { Route as AuthenticatedInventarioRouteImport } from './routes/_authenticated/inventario'
 
@@ -29,6 +30,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedEnvioFbaRoute = AuthenticatedEnvioFbaRouteImport.update({
+  id: '/envio-fba',
+  path: '/envio-fba',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedHistorialRoute = AuthenticatedHistorialRouteImport.update({
   id: '/historial',
   path: '/historial',
@@ -43,12 +49,14 @@ const AuthenticatedInventarioRoute = AuthenticatedInventarioRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/envio-fba': typeof AuthenticatedEnvioFbaRoute
   '/historial': typeof AuthenticatedHistorialRoute
   '/inventario': typeof AuthenticatedInventarioRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/envio-fba': typeof AuthenticatedEnvioFbaRoute
   '/historial': typeof AuthenticatedHistorialRoute
   '/inventario': typeof AuthenticatedInventarioRoute
 }
@@ -57,19 +65,21 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/envio-fba': typeof AuthenticatedEnvioFbaRoute
   '/_authenticated/historial': typeof AuthenticatedHistorialRoute
   '/_authenticated/inventario': typeof AuthenticatedInventarioRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/historial' | '/inventario'
+  fullPaths: '/' | '/auth' | '/envio-fba' | '/historial' | '/inventario'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/historial' | '/inventario'
+  to: '/' | '/auth' | '/envio-fba' | '/historial' | '/inventario'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/envio-fba'
     | '/_authenticated/historial'
     | '/_authenticated/inventario'
   fileRoutesById: FileRoutesById
@@ -103,6 +113,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/envio-fba': {
+      id: '/_authenticated/envio-fba'
+      path: '/envio-fba'
+      fullPath: '/envio-fba'
+      preLoaderRoute: typeof AuthenticatedEnvioFbaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/historial': {
       id: '/_authenticated/historial'
       path: '/historial'
@@ -121,11 +138,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedEnvioFbaRoute: typeof AuthenticatedEnvioFbaRoute
   AuthenticatedHistorialRoute: typeof AuthenticatedHistorialRoute
   AuthenticatedInventarioRoute: typeof AuthenticatedInventarioRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedEnvioFbaRoute: AuthenticatedEnvioFbaRoute,
   AuthenticatedHistorialRoute: AuthenticatedHistorialRoute,
   AuthenticatedInventarioRoute: AuthenticatedInventarioRoute,
 }
