@@ -76,15 +76,26 @@ export const syncSheet = createServerFn({ method: "POST" })
     const { supabase } = context;
 
     const [{ data: products, error: pErr }, { data: sales, error: sErr }] = await Promise.all([
+    const [
+      { data: products, error: pErr },
+      { data: sales, error: sErr },
+      { data: reserved, error: rErr },
+    ] = await Promise.all([
       supabase.from("products").select("name,quantity,price,updated_at").order("name"),
       supabase
         .from("sales")
         .select("platform,quantity,sold_at,products(name)")
         .order("sold_at", { ascending: false })
         .limit(2000),
+      supabase
+        .from("fba_reservations")
+        .select("product_name,quantity,created_at")
+        .order("product_name"),
     ]);
     if (pErr) throw pErr;
     if (sErr) throw sErr;
+    if (rErr) throw rErr;
+
 
     await ensureTabs();
 
