@@ -75,8 +75,8 @@ export const syncSheet = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const { supabase } = context;
 
-    const [{ data: products, error: pErr }, { data: sales, error: sErr }] = await Promise.all([
     const [
+
       { data: products, error: pErr },
       { data: sales, error: sErr },
       { data: reserved, error: rErr },
