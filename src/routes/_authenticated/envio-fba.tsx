@@ -134,7 +134,7 @@ function EnvioFba() {
       for (const row of reservations) {
         const product = row.product_id ? byId.get(row.product_id) : undefined;
         const sent = product ? Math.min(row.quantity, product.quantity) : row.quantity;
-        if (sent <= 0) continue;
+        if (sent <= 0 || !row.product_id) continue;
 
         await supabase.from("sales").insert({
           user_id: userId,
@@ -142,6 +142,7 @@ function EnvioFba() {
           platform: "fba",
           quantity: sent,
         });
+
 
         if (product) {
           const left = Math.max(0, product.quantity - sent);
