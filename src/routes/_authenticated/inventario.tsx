@@ -329,6 +329,13 @@ function Index() {
           existing.quantity = action.quantity;
         }
 
+        if (action.type === "update_price") {
+          const existing = find(action.name);
+          if (!existing) continue;
+          await supabase.from("products").update({ price: action.price }).eq("id", existing.id);
+          existing.price = action.price;
+        }
+
         if (action.type === "remove") {
           const existing = find(action.name);
           if (!existing) continue;
@@ -347,12 +354,31 @@ function Index() {
   const voiceMutation = useMutation({
     mutationFn: async (audioBase64: string) => {
       const result = await interpretVoice({
-        data: { audioBase64, products: products.map((p) => ({ name: p.name, quantity: p.quantity })) },
+        data: {
+          audioBase64,
+          products: products.map((p) => ({
+            name: p.name,
+            quantity: p.quantity,
+            price: p.price,
+          })),
+        },
       });
       await applyActions(result.actions);
       return result;
     },
-    onSuccess: (result) => setFeedback({ heard: result.transcript, reply: result.reply }),
+    onSuccess: (result) => {
+      setFeedback({ heard: result.transcript, reply: result.reply });
+      if (typeof window !== "undefined" && "speechSynthesis" in window && result.reply) {
+        try {
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(result.reply);
+          utterance.lang = "es-ES";
+          window.speechSynthesis.speak(utterance);
+        } catch {
+          // Ignorar si el navegador bloquea la síntesis de voz
+        }
+      }
+    },
     onError: (err: Error) => setError(err.message),
   });
 
@@ -571,11 +597,32 @@ function Index() {
                   : "border-warning/40 bg-warning/10"
               }`}
             >
-              <p className="flex-1 text-sm leading-snug">{alert.message}</p>
+              <div className="flex-1">
+                <p className="text-sm leading-snug">{alert.message}</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <a
+                    href="https://es.wallapop.com/app/catalog/published"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/20 px-2.5 py-1 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/30 transition-colors"
+                  >
+                    Wallapop ↗
+                  </a>
+                  <a
+                    href="https://www.vinted.es/member/items"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 rounded-lg bg-cyan-500/20 px-2.5 py-1 text-xs font-semibold text-cyan-400 hover:bg-cyan-500/30 transition-colors"
+                  >
+                    Vinted ↗
+                  </a>
+                </div>
+              </div>
               <button
                 onClick={() => markAlertDone(alert.id)}
                 aria-label="Marcar como hecho"
-                className="rounded-xl bg-secondary p-2 text-secondary-foreground"
+                title="Marcar como revisado/hecho"
+                className="rounded-xl bg-secondary p-2 text-secondary-foreground hover:bg-secondary/80 transition-colors"
               >
                 <Check className="size-4" />
               </button>
@@ -791,6 +838,32 @@ function Index() {
                 A almacén
               </button>
             </div>
+
+            {product.quantity === 0 && (
+              <div className="mt-2 rounded-xl border border-destructive/30 bg-destructive/10 p-2.5">
+                <p className="text-[11px] font-semibold text-destructive">
+                  ⚠️ Agotado: Recuerda borrar o reservar el anuncio:
+                </p>
+                <div className="mt-2 flex gap-2">
+                  <a
+                    href="https://es.wallapop.com/app/catalog/published"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 rounded-lg bg-emerald-500/20 py-1.5 text-center text-xs font-bold text-emerald-400 hover:bg-emerald-500/30 transition-colors"
+                  >
+                    Wallapop ↗
+                  </a>
+                  <a
+                    href="https://www.vinted.es/member/items"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 rounded-lg bg-cyan-500/20 py-1.5 text-center text-xs font-bold text-cyan-400 hover:bg-cyan-500/30 transition-colors"
+                  >
+                    Vinted ↗
+                  </a>
+                </div>
+              </div>
+            )}
 
             <button
               disabled={product.quantity === 0}
