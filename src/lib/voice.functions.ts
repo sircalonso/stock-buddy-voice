@@ -6,8 +6,8 @@ const Input = z.object({
   products: z.array(
     z.object({
       name: z.string(),
-      quantity: z.number(),
-      price: z.number().nullable().optional(),
+      quantity: z.coerce.number(),
+      price: z.coerce.number().nullable().optional(),
     }),
   ),
 });

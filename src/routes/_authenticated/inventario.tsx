@@ -359,7 +359,7 @@ function Index() {
           products: products.map((p) => ({
             name: p.name,
             quantity: p.quantity,
-            price: p.price,
+            price: p.price != null && !isNaN(Number(p.price)) ? Number(p.price) : null,
           })),
         },
       });
@@ -510,7 +510,10 @@ function Index() {
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
             Wallapop · Vinted · Almacén
           </p>
-          <h1 className="mt-1 text-3xl font-extrabold leading-tight">Mi stock por voz</h1>
+          <h1 className="mt-1 flex items-center gap-2 text-3xl font-extrabold leading-tight">
+            Mi stock por voz
+            <span className="rounded-full bg-primary/20 px-2 py-0.5 text-[11px] font-semibold text-primary">v1.1</span>
+          </h1>
         </div>
         <div className="flex items-center gap-2">
           <Link
